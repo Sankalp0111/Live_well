@@ -21,7 +21,7 @@ export default class Signup extends Component {
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      toast.success("Signup successful! Redirecting to Sign In...", {
+      toast.success("Signup successful!..", {
         position: "top-center",
         autoClose: 2000,
       });

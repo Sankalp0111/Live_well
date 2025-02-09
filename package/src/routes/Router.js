@@ -17,7 +17,7 @@ const ThemeRoutes = [
     path: "/",
     element: <PrivateRoute element={<FullLayout />} />, // Protect FullLayout
     children: [
-      { path: "/", element: <Navigate to="/dashboard" replace /> },
+      { path: "/", element: <Navigate to="/signin" replace /> },
       { path: "/dashboard", exact: true, element: <Starter /> },
       { path: "/Smartpill", exact: true, element: <About /> },
       { path: "/chatbot", exact: true, element: <ChatBot /> },
