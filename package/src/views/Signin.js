@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../firebase";
@@ -10,7 +10,14 @@ import signinbg from "../assets/images/sign.avif";
 const SignIn = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -24,8 +31,8 @@ const SignIn = () => {
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      localStorage.setItem("authToken", userCredential.user.accessToken); // Store auth token
-      toast.success("Signed in successfully!", { autoClose: 2000 , position: "top-center" });
+      localStorage.setItem("authToken", userCredential.user.accessToken);
+      toast.success("Signed in successfully!", { autoClose: 2000, position: "top-center" });
 
       setTimeout(() => navigate("/dashboard"), 2000);
     } catch (error) {
@@ -46,7 +53,7 @@ const SignIn = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       localStorage.setItem("authToken", result.user.accessToken);
-      toast.success("Signed in with Google!", { autoClose: 2000 , position: "top-center" });
+      toast.success("Signed in with Google!", { autoClose: 2000, position: "top-center" });
 
       setTimeout(() => navigate("/dashboard"), 2000);
     } catch (error) {
@@ -88,9 +95,11 @@ const SignIn = () => {
           </p>
         </div>
 
-        <div style={styles.imageContainer}>
-          <img src={signinbg} alt="Sign In" style={styles.image} />
-        </div>
+        {!isMobile && (
+          <div style={styles.imageContainer}>
+            <img src={signinbg} alt="Sign In" style={styles.image} />
+          </div>
+        )}
       </div>
     </div>
   );

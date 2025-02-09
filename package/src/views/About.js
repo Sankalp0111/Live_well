@@ -118,6 +118,22 @@ const SmartPillReminder = () => {
           overflow: hidden;
         }
 
+        @media (max-width: 768px) {
+  .main-container {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .image-container img {
+    max-width: 60%; /* Reduce image size on small screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .image-container img {
+    max-width: 50%; /* Further reduce image size for very small screens */
+  }
+}
         .image-container {
           flex: 1;
           display: flex;
