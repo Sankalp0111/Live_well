@@ -2,29 +2,48 @@ import { Nav, NavItem } from "reactstrap";
 import { Link, useLocation } from "react-router-dom";
 import { MdMedication } from "react-icons/md";
 import { MdMyLocation } from "react-icons/md";
-import { FaRobot } from "react-icons/fa";
+import { FaRobot ,FaUser, FaBell,FaStethoscope} from "react-icons/fa";
 
 const navigation = [
   {
     title: "Dashboard",
     href: "/dashboard",
-    icon: "bi bi-speedometer2", // Keep this as a string for Bootstrap icons
+    icon: "bi bi-speedometer2", 
   },
   {
     title: "Pill Reminder",
     href: "/Smartpill",
-    icon: <MdMedication />, // This is a React component
+    icon: <MdMedication />, 
   },
   {
     title: "GPS Location",
     href: "/gps-location",
-    icon: <MdMyLocation />, // GPS pinpoint icon
+    icon: <MdMyLocation />, 
+  },
+
+  {
+    title: "Symptom Checker",
+    href: "/symptom",
+    icon: <FaStethoscope />,
   },
   {
     title: "Chatbot",
     href: "/chatbot",
-    icon: <FaRobot />, // Chatbot icon
-}
+    icon: <FaRobot />, 
+},
+
+{
+  title: "Alerts",
+  href: "/alert",
+  icon: <FaBell />,
+},
+{
+  title: "Profile",
+  href: "/profile",
+  icon: <FaUser />, 
+},
+
+
 ];
 
 const Sidebar = () => {
@@ -47,7 +66,7 @@ const Sidebar = () => {
                     : "nav-link text-secondary py-3"
                 }
               >
-                {/* Check if the icon is a string (Bootstrap) or a React component */}
+              
                 {typeof navi.icon === "string" ? (
                   <i className={navi.icon}></i>
                 ) : (

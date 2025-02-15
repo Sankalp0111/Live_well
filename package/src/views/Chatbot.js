@@ -38,8 +38,6 @@ const ChatBot = () => {
     const newMessages = [...messages, { text: input, sender: "user" }];
     setMessages(newMessages);
     setInput("");
-
-    // Simulating bot reply
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,

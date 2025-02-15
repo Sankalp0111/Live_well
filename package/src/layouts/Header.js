@@ -1,36 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
-import {
-  Navbar,
-  Collapse,
-  Nav,
-  NavItem,
-  Button,
-} from "reactstrap";
+import { Navbar, Collapse, Nav, NavItem, Button } from "reactstrap";
+import { auth } from "../firebase"; // Import Firebase auth
+import { signOut } from "firebase/auth";
+import { toast } from "react-toastify";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  // Check authentication status when component mounts & whenever localStorage changes
   useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem("token");
-      setIsAuthenticated(!!token);
-    };
+    // Firebase authentication state listener
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
 
-    checkAuth();
-    window.addEventListener("storage", checkAuth); // Listen for auth changes
-
-    return () => window.removeEventListener("storage", checkAuth); // Cleanup
+    return () => unsubscribe();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token"); // Remove token
-    setIsAuthenticated(false);
-    navigate("/signin"); // Redirect to sign-in page
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast.success("Logged out successfully!", { autoClose: 2000, position: "top-center" });
+      navigate("/signin"); // Redirect to sign-in page
+    } catch (error) {
+      toast.error("Logout failed: " + error.message);
+    }
   };
 
   const toggleNavbar = () => setIsOpen(!isOpen);
@@ -40,6 +37,8 @@ const Header = () => {
       <div className="d-flex align-items-center">
         <div className="text-white fw-bold fs-2">LiveWell</div>
       </div>
+
+      {/* Hamburger menu button for small screens */}
       <div className="hstack gap-2">
         <Button
           color="primary"
@@ -52,7 +51,7 @@ const Header = () => {
       </div>
 
       <Collapse navbar isOpen={isOpen}>
-        <Nav className="ms-auto" navbar>
+        <Nav className="ms-auto d-md-none" navbar> {/* Show menu only on small screens */}
           <NavItem>
             <Link to="/dashboard" className="nav-link">Dashboard</Link>
           </NavItem>
@@ -63,24 +62,40 @@ const Header = () => {
             <Link to="/gps-location" className="nav-link">GPS Location</Link>
           </NavItem>
           <NavItem>
+            <Link to="/symptom" className="nav-link">Symptom Checker</Link>
+          </NavItem>
+          <NavItem>
             <Link to="/chatbot" className="nav-link">AI Chatbot</Link>
           </NavItem>
+          <NavItem>
+            <Link to="/alerts" className="nav-link">Alerts</Link>
+          </NavItem>
+          <NavItem>
+            <Link to="/profile" className="nav-link">Profile</Link>
+          </NavItem>
 
-          {isAuthenticated ? (
+          {/* Logout Button for Mobile View */}
+          {user && (
             <NavItem>
-              <Button color="danger" onClick={handleLogout}>
+              <Button color="none" className="w-100 mt-2 text-white" onClick={handleLogout}>
                 <FaSignOutAlt className="me-2" /> Logout
               </Button>
-            </NavItem>
-          ) : (
-            <NavItem>
-              <Link to="/signin" className="nav-link">
-                <FaSignInAlt className="me-2" />Log Out
-              </Link>
             </NavItem>
           )}
         </Nav>
       </Collapse>
+
+      <div className="d-none d-md-block">
+        {user ? (
+          <Button  color="none" className="text-white"  onClick={handleLogout}>
+            <FaSignOutAlt className="me-2" /> Logout
+          </Button>
+        ) : (
+          <Link to="/signin" className="nav-link text-white">
+            <FaSignInAlt className="me-2" /> Log In
+          </Link>
+        )}
+      </div>
     </Navbar>
   );
 };

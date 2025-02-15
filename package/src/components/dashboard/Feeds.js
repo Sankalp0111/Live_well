@@ -1,23 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Card, CardBody, CardTitle, Row, Col } from "reactstrap";
-import { FaHeartbeat, FaHandHoldingHeart, FaTemperatureLow } from "react-icons/fa";
+import { FaHeartbeat, FaTemperatureLow } from "react-icons/fa";
 import { GiHealthPotion } from "react-icons/gi";
 
 const Feeds = () => {
-  const dummyData = [
-    { today: "Heart Rate", title: "104 bpm" },
-    { today: "Blood Pressure", title: "120/80 mmHg" },
-    { today: "Body Temperature", title: "36.8 °C" },
-    { today: "SpO2", title: "98 %" },
-  ];
-
-  const [healthData, setHealthData] = useState(dummyData);
+  const [healthData, setHealthData] = useState([
+    { today: "Heart Rate", title: "Loading..." },
+    { today: "Body Temperature", title: "Loading..." },
+    { today: "SpO2", title: "Loading..." },
+  ]);
 
   // Define color mapping
   const colorMapping = {
     "Heart Rate": "#0d6efd",
-    "Blood Pressure": "#ff6384",
     "Body Temperature": "#ffa500",
     "SpO2": "#00c49f",
   };
@@ -25,7 +21,6 @@ const Feeds = () => {
   // Define icon mapping
   const iconMapping = {
     "Heart Rate": <FaHeartbeat />,
-    "Blood Pressure": <FaHandHoldingHeart />,
     "Body Temperature": <FaTemperatureLow />,
     "SpO2": <GiHealthPotion />,
   };
@@ -33,8 +28,8 @@ const Feeds = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("https://your-api-endpoint.com/health-metrics");
-        if (response.data.length > 0) {
+        const response = await axios.get("http://localhost:5000/health-metrics");
+        if (response.data && response.data.length > 0) {
           setHealthData(response.data);
         }
       } catch (error) {
@@ -43,7 +38,7 @@ const Feeds = () => {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 10000);
+    const interval = setInterval(fetchData, 5000); // Fetch data every 5 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -55,9 +50,11 @@ const Feeds = () => {
         </CardTitle>
         <Row>
           {healthData.map((item, index) => (
-            <Col md="12" key={index} className="mb-2"> 
-            <Card className="d-flex flex-row align-items-center p-2 text-white shadow" 
-              style={{ backgroundColor: colorMapping[item.today] || "#0d6efd" }}>
+            <Col md="12" key={index} className="mb-2">
+              <Card
+                className="d-flex flex-row align-items-center p-2 text-white shadow"
+                style={{ backgroundColor: colorMapping[item.today] || "#0d6efd" }}
+              >
                 <div className="me-3" style={{ fontSize: "2.5rem" }}>
                   {iconMapping[item.today] || <FaHeartbeat />}
                 </div>

@@ -67,12 +67,10 @@ const SmartPillReminder = () => {
   return (
     <div className="container">
       <div className="main-container">
-        {/* Left Side - Image */}
         <div className="image-container">
           <img src={pill} alt="Pill Reminder" />
         </div>
 
-        {/* Right Side - Form */}
         <div className="form-container">
           <h1 className="heading">Smart Pill Reminder</h1>
           <form onSubmit={handleSubmit}>
@@ -96,7 +94,6 @@ const SmartPillReminder = () => {
         </div>
       </div>
 
-      {/* Responsive CSS */}
       <style>{`
         .container {
           width: 100%;
@@ -110,11 +107,7 @@ const SmartPillReminder = () => {
           display: flex;
           flex-wrap: wrap;
           max-width: 1000px;
-          
           width: 100%;
-         
-         
-          
           overflow: hidden;
         }
 
