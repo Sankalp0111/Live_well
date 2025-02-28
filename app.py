@@ -32,17 +32,17 @@ try:
     db = client[db_name]  
     patients_collection = db["patients"]  # Replace with the actual collection name
 
-    print("✅ Connected to MongoDB:", db_name)
+    print(" Connected to MongoDB:", db_name)
 except Exception as e:
-    print("❌ MongoDB Connection Error:", e)
+    print(" MongoDB Connection Error:", e)
 @app.route("/patients", methods=["GET"])
 def get_patients():
     try:
         patients = list(patients_collection.find({}, {"_id": 0}))  # Exclude ObjectId for JSON serialization
-        print("📢 Retrieved Patients Data:", patients)  # Console log the data
+        print(" Retrieved Patients Data:", patients)  # Console log the data
         return jsonify(patients)
     except Exception as e:
-        print("❌ Error Fetching Patients:", str(e))  # Log error to console
+        print("Error Fetching Patients:", str(e))  # Log error to console
         return jsonify({"error": "Failed to fetch patients", "details": str(e)}), 500
 
 if __name__ == "__main__":
