@@ -26,17 +26,7 @@ const navigation = [
     href: "/symptom",
     icon: <FaStethoscope />,
   },
-  {
-    title: "Chatbot",
-    href: "/chatbot",
-    icon: <FaRobot />, 
-},
 
-{
-  title: "Alerts",
-  href: "/alert",
-  icon: <FaBell />,
-},
 {
   title: "Profile",
   href: "/profile",

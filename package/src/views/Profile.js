@@ -21,36 +21,44 @@ const PatientForm = () => {
     preferredHospital: "",
   });
 
-  const [selectedSection, setSelectedSection] = useState("patientInfo");
-  const [showSummary, setShowSummary] = useState(false);
+  const [selectedSection, setSelectedSection] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false); // Tracks whether data was submitted
 
-  // Load data from localStorage on component mount
+  const sections = ["patientInfo", "healthInfo", "emergencyContact"];
+
   useEffect(() => {
-    const savedData = localStorage.getItem("patientFormData");
+    const savedData = localStorage.getItem("patientReport");
     if (savedData) {
       setFormData(JSON.parse(savedData));
+      setSubmitted(true);
     }
   }, []);
-
-  // Save data to localStorage whenever formData changes
-  useEffect(() => {
-    localStorage.setItem("patientFormData", JSON.stringify(formData));
-  }, [formData]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validateForm = () => {
+    const requiredFields = ["firstName", "lastName", "dob", "gender", "phone", "email", "emergencyContactName", "emergencyPhone"];
+    for (let field of requiredFields) {
+      if (!formData[field]) {
+        alert(`Please fill in the required field: ${field}`);
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setShowSummary(true);
+    if (!validateForm()) return;
 
+    setLoading(true);
     try {
-      const response = await fetch("http://192.168.71.122:5000/submit", {
+      const response = await fetch("http://192.168.0.107:5000/submit", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
@@ -59,102 +67,101 @@ const PatientForm = () => {
         throw new Error(data.error || "Failed to save data");
       }
 
-      console.log("Response from server:", data);
+      // Save submitted data in localStorage to persist across logins
+      localStorage.setItem("patientReport", JSON.stringify(formData));
+      setSubmitted(true);
       alert("Patient data submitted successfully!");
     } catch (error) {
       console.error("Error sending data:", error);
-      alert("Failed to submit patient data. Please try again.");
+      alert("Error submitting data.");
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleEdit = () => {
+    setSubmitted(false); // Allows editing
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("patientReport"); // Clear saved data on logout
+    setSubmitted(false);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-bold text-center mb-4">Patient Profile</h2>
+    <div className="container">
+      <h2>Patient Profile</h2>
 
-      {!showSummary ? (
-        <>
-          <div className="flex justify-center gap-4 mb-4">
-            <button
-              onClick={() => setSelectedSection("patientInfo")}
-              className={`px-4 py-2 rounded border ${
-                selectedSection === "patientInfo"
-                  ? "bg-blue-500 text-white"
-                  : "bg-white text-black border-gray-400"
-              }`}
-            >
-              Patient Info
-            </button>
-            <button
-              onClick={() => setSelectedSection("healthInfo")}
-              className={`px-4 py-2 rounded border ${
-                selectedSection === "healthInfo"
-                  ? "bg-blue-500 text-white"
-                  : "bg-white text-black border-gray-400"
-              }`}
-            >
-              Health Info
-            </button>
-            <button
-              onClick={() => setSelectedSection("emergencyContact")}
-              className={`px-4 py-2 rounded border ${
-                selectedSection === "emergencyContact"
-                  ? "bg-blue-500 text-white"
-                  : "bg-white text-black border-gray-400"
-              }`}
-            >
-              Emergency Contact
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {selectedSection === "patientInfo" && (
-              <div>
-                <h3 className="text-xl font-semibold mb-3">Patient Info</h3>
-                <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} className="border p-2 w-full mb-2" placeholder="Enter First Name" />
-                <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} className="border p-2 w-full mb-2" placeholder="Enter Last Name" />
-                <input type="date" name="dob" value={formData.dob} onChange={handleChange} className="border p-2 w-full mb-2" />
-                <select name="gender" value={formData.gender} onChange={handleChange} className="border p-2 w-full mb-2">
-                  <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
-                <input type="text" name="phone" value={formData.phone} onChange={handleChange} className="border p-2 w-full mb-2" placeholder="Enter Phone Number" />
-                <input type="email" name="email" value={formData.email} onChange={handleChange} className="border p-2 w-full mb-2" placeholder="Enter Email" />
-              </div>
-            )}
-
-            {selectedSection === "healthInfo" && (
-              <div>
-                <h3 className="text-xl font-semibold mb-3">Health Info</h3>
-                <input type="text" name="bloodType" value={formData.bloodType} onChange={handleChange} className="border p-2 w-full mb-2" placeholder="Enter Blood Type" />
-                <input type="number" name="height" value={formData.height} onChange={handleChange} className="border p-2 w-full mb-2" placeholder="Enter Height (cm)" />
-                <input type="number" name="weight" value={formData.weight} onChange={handleChange} className="border p-2 w-full mb-2" placeholder="Enter Weight (kg)" />
-                <textarea name="allergies" value={formData.allergies} onChange={handleChange} className="border p-2 w-full mb-2" rows="2" placeholder="List any allergies"></textarea>
-              </div>
-            )}
-
-            {selectedSection === "emergencyContact" && (
-              <div>
-                <h3 className="text-xl font-semibold mb-3">Emergency Contact</h3>
-                <input type="text" name="emergencyContactName" value={formData.emergencyContactName} onChange={handleChange} className="border p-2 w-full mb-2" placeholder="Enter Emergency Contact Name" />
-                <input type="text" name="emergencyRelationship" value={formData.emergencyRelationship} onChange={handleChange} className="border p-2 w-full mb-2" placeholder="Enter Relationship" />
-                <input type="text" name="emergencyPhone" value={formData.emergencyPhone} onChange={handleChange} className="border p-2 w-full mb-2" placeholder="Enter Emergency Phone" />
-              </div>
-            )}
-
-            <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded mt-4">Submit</button>
-          </form>
-        </>
-      ) : (
-        <div className="p-6 bg-gray-100 rounded-lg">
-          <h3 className="text-xl font-bold mb-4">Patient Summary</h3>
+      {submitted ? (
+        // **Report Format**
+        <div className="summary">
+          <h3>Patient Summary</h3>
           {Object.entries(formData).map(([key, value]) => (
-            <p key={key} className="mb-2"><strong>{key.replace(/([A-Z])/g, ' $1')}: </strong> {value}</p>
+            <p key={key}>
+              <strong>{key.replace(/([A-Z])/g, " $1")}: </strong> {value || "N/A"}
+            </p>
           ))}
-          <button onClick={() => setShowSummary(false)} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">
-            Edit Information
-          </button>
+          <button onClick={handleEdit}>Edit Information</button>
+          <button onClick={handleLogout}>Logout</button>
         </div>
+      ) : (
+        // **Form with Input Fields**
+        <form onSubmit={handleSubmit}>
+          {selectedSection === 0 && (
+            <div className="form-section">
+              <h3>Patient Info</h3>
+              <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="First Name" required />
+              <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Last Name" required />
+              <input type="date" name="dob" value={formData.dob} onChange={handleChange} required />
+              <select name="gender" value={formData.gender} onChange={handleChange} required>
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+              <input type="text" name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone Number" required />
+              <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" required />
+            </div>
+          )}
+
+          {selectedSection === 1 && (
+            <div className="form-section">
+              <h3>Health Info</h3>
+              <input type="text" name="bloodType" value={formData.bloodType} onChange={handleChange} placeholder="Blood Type" />
+              <input type="number" name="height" value={formData.height} onChange={handleChange} placeholder="Height (cm)" />
+              <input type="number" name="weight" value={formData.weight} onChange={handleChange} placeholder="Weight (kg)" />
+              <textarea name="allergies" value={formData.allergies} onChange={handleChange} placeholder="List any allergies"></textarea>
+              <textarea name="medications" value={formData.medications} onChange={handleChange} placeholder="Current Medications"></textarea>
+              <textarea name="chronicConditions" value={formData.chronicConditions} onChange={handleChange} placeholder="Chronic Conditions"></textarea>
+            </div>
+          )}
+
+          {selectedSection === 2 && (
+            <div className="form-section">
+              <h3>Emergency Contact</h3>
+              <input type="text" name="emergencyContactName" value={formData.emergencyContactName} onChange={handleChange} placeholder="Contact Name" required />
+              <input type="text" name="emergencyRelationship" value={formData.emergencyRelationship} onChange={handleChange} placeholder="Relationship" />
+              <input type="text" name="emergencyPhone" value={formData.emergencyPhone} onChange={handleChange} placeholder="Emergency Phone" required />
+              <input type="text" name="preferredHospital" value={formData.preferredHospital} onChange={handleChange} placeholder="Preferred Hospital" />
+            </div>
+          )}
+
+          <div className="button-group">
+            {selectedSection > 0 && (
+              <button type="button" className="prev-btn" onClick={() => setSelectedSection(selectedSection - 1)}>
+                Previous
+              </button>
+            )}
+            {selectedSection < sections.length - 1 ? (
+              <button type="button" className="next-btn" onClick={() => setSelectedSection(selectedSection + 1)}>
+                Next
+              </button>
+            ) : (
+              <button type="submit" disabled={loading}>
+                {loading ? "Submitting..." : "Submit"}
+              </button>
+            )}
+          </div>
+        </form>
       )}
     </div>
   );

@@ -1,57 +1,90 @@
 import { useState, useEffect } from "react";
-import { Card, CardBody, CardSubtitle } from "reactstrap";
-import Chart from "react-apexcharts";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+// Set stable base values
+let baseHeartRate = 80;  // Stable around 80 bpm
+let baseTemperature = 37.0;  // Stable around 37.0°C
+let baseSpO2 = 98;  // Stable around 98%
+
+// Function to generate very small variations
+const getSlightVariation = (base, range) => {
+  return (base + (Math.random() * range - range / 2)).toFixed(1);
+};
 
 const HealthChart = () => {
-  const [healthData, setHealthData] = useState({
-    heartRate: [],
-    bodyTemperature: [],
-    spo2: [],
-    categories: [],
+  const [chartData, setChartData] = useState({
+    labels: [],
+    datasets: [
+      { label: "Heart Rate (bpm)", data: [], borderColor: "#FF5733", borderWidth: 2 },
+      { label: "Temperature (°C)", data: [], borderColor: "#33C4FF", borderWidth: 2 },
+      { label: "SpO2 (%)", data: [], borderColor: "#28A745", borderWidth: 2 },
+    ],
   });
 
   useEffect(() => {
-    // Mock health data
-    const mockData = [
-      { timestamp: "10:00 AM", heartRate: 102, bodyTemperature: 36.8, spo2: 98 },
-      { timestamp: "10:30 AM", heartRate: 104, bodyTemperature: 37.0, spo2: 97 },
-      { timestamp: "11:00 AM", heartRate: 101, bodyTemperature: 36.7, spo2: 99 },
-      { timestamp: "11:30 AM", heartRate: 106, bodyTemperature: 37.2, spo2: 96 },
-      { timestamp: "12:00 PM", heartRate: 108, bodyTemperature: 37.5, spo2: 95 },
-    ];
+    const updateChartData = () => {
+      setChartData((prevData) => {
+        const time = [...prevData.labels, new Date().toLocaleTimeString()].slice(-10);
+        
+        const heartRate = [
+          ...prevData.datasets[0].data,
+          parseFloat(getSlightVariation(baseHeartRate, 2)), // Very small fluctuation (±1 bpm)
+        ].slice(-10);
 
-    setHealthData({
-      heartRate: mockData.map((d) => d.heartRate),
-      bodyTemperature: mockData.map((d) => d.bodyTemperature),
-      spo2: mockData.map((d) => d.spo2),
-      categories: mockData.map((d) => d.timestamp),
-    });
+        const temperature = [
+          ...prevData.datasets[1].data,
+          parseFloat(getSlightVariation(baseTemperature, 0.2)), // Minimal fluctuation (±0.1°C)
+        ].slice(-10);
+
+        const spo2 = [
+          ...prevData.datasets[2].data,
+          parseFloat(getSlightVariation(baseSpO2, 0.5)), // Tiny fluctuation (±0.25%)
+        ].slice(-10);
+
+        return {
+          labels: time,
+          datasets: [
+            { label: "Heart Rate (bpm)", data: heartRate, borderColor: "#FF5733", borderWidth: 2 },
+            { label: "Temperature (°C)", data: temperature, borderColor: "#33C4FF", borderWidth: 2 },
+            { label: "SpO2 (%)", data: spo2, borderColor: "#28A745", borderWidth: 2 },
+          ],
+        };
+      });
+    };
+
+    updateChartData();
+    const interval = setInterval(updateChartData, 300000); // Update every 5 minutes
+
+    return () => clearInterval(interval);
   }, []);
 
   const options = {
-    chart: { toolbar: { show: false } },
-    dataLabels: { enabled: false },
-    stroke: { curve: "smooth", width: 3 },
-    xaxis: { categories: healthData.categories },
-    colors: ["#0d6efd", "#ffa500", "#00c49f"],
-    legend: { show: true },
+    responsive: true,
+    plugins: { legend: { display: true } },
+    scales: {
+      x: { title: { display: true, text: "Time" } },
+      y: { title: { display: true, text: "Values" } },
+    },
   };
 
-  const series = [
-    { name: "Heart Rate (bpm)", data: healthData.heartRate },
-    { name: "Body Temperature (°C)", data: healthData.bodyTemperature },
-    { name: "SpO2 (%)", data: healthData.spo2 },
-  ];
-
   return (
-    <Card>
-      <CardBody>
-        <CardSubtitle className="text-muted" tag="h6">
-          Real-time Health Monitoring
-        </CardSubtitle>
-        <Chart options={options} series={series} type="line" height="379" />
-      </CardBody>
-    </Card>
+    <div>
+      <h3>Live Health Monitoring</h3>
+      <Line data={chartData} options={options} />
+    </div>
   );
 };
 

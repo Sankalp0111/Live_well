@@ -11,11 +11,11 @@ const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
 
 root.render(
-  <Suspense fallback={<Loader />}>
+  
     <HashRouter>
       <App />
     </HashRouter>
-  </Suspense>
+
 );
 
 reportWebVitals();

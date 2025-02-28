@@ -1,69 +1,43 @@
-require("dotenv").config();
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
+const bodyParser = require("body-parser");
+const twilio = require("twilio");
 
 const app = express();
-app.use(cors()); // Allow requests from frontend
-app.use(express.json()); // Parse JSON data
+app.use(cors());
+app.use(bodyParser.json());
 
-// Secure MongoDB Connection
-mongoose
-  .connect("mongodb+srv://vaityjatin13:130404@cluster.vbdds.mongodb.net/?retryWrites=true&w=majority&appName=Cluster").then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log("Database connection error:", err));
+// Twilio Credentials (Replace with your actual credentials)
+const ACCOUNT_SID = "AC77231b035dc698fdf1b76840fca2638a";
+const AUTH_TOKEN = "3238da2b7d2ac75cabf0e8c555502c27";
+const TWILIO_PHONE_NUMBER = "+16826289922";
 
-// Define Patient Schema & Model
-const patientSchema = new mongoose.Schema({
-  firstName: String,
-  lastName: String,
-  dob: String,
-  gender: String,
-  phone: String,
-  email: String,
-  bloodType: String,
-  height: String,
-  weight: String,
-  allergies: String,
-  medications: String,
-  chronicConditions: String,
-  emergencyContactName: String,
-  emergencyRelationship: String,
-  emergencyPhone: String,
-  preferredHospital: String,
+const client = twilio(ACCOUNT_SID, AUTH_TOKEN);
+
+// API to Send SMS Reminder
+app.post("/api/sendReminder", async (req, res) => {
+    const { pillName, time, phoneNumber } = req.body;
+    const formattedNumber = phoneNumber.startsWith("+") ? phoneNumber : `+91${phoneNumber}`;
+
+    try {
+        const messageBody = `Reminder: Take your ${pillName} at ${time}!`;
+
+        const response = await client.messages.create({
+            body: messageBody,
+            from: TWILIO_PHONE_NUMBER,
+            to: formattedNumber,
+        });
+
+        console.log(`SMS sent to ${formattedNumber}: ${messageBody}`);
+        res.status(200).json({ success: true, message: "Reminder sent!", response });
+    } catch (error) {
+        console.error("Twilio Error:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
-const Patient = mongoose.model("Patient", patientSchema);
-
-// API Routes
-app.post("/submit", async (req, res) => {
-  try {
-    const patient = new Patient(req.body);
-    await patient.save();
-    res.json({ message: "Patient data saved", id: patient._id });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to save patient data" });
-  }
+// Start Server
+const PORT = 5000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
-
-app.get("/patients/:id", async (req, res) => {
-  try {
-    const patient = await Patient.findById(req.params.id);
-    if (!patient) return res.status(404).json({ error: "Patient not found" });
-    res.json(patient);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch patient data" });
-  }
-});
-
-app.put("/update/:id", async (req, res) => {
-  try {
-    const updatedPatient = await Patient.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedPatient) return res.status(404).json({ error: "Patient not found" });
-    res.json({ message: "Patient data updated", data: updatedPatient });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to update patient data" });
-  }
-});
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

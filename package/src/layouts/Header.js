@@ -65,9 +65,6 @@ const Header = () => {
             <Link to="/symptom" className="nav-link">Symptom Checker</Link>
           </NavItem>
           <NavItem>
-            <Link to="/chatbot" className="nav-link">AI Chatbot</Link>
-          </NavItem>
-          <NavItem>
             <Link to="/alerts" className="nav-link">Alerts</Link>
           </NavItem>
           <NavItem>
