@@ -13,7 +13,7 @@ if (rootElement) {
   root.render(
     <React.StrictMode>
       <Suspense fallback={<Loader/>}>
-        <BrowserRouter basename="/LiveWell">
+        <BrowserRouter >
           <App />
         </BrowserRouter>
       </Suspense>
