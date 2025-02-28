@@ -2,20 +2,15 @@
   "version": 2,
   "builds": [
     {
-      "src": "package.json",
+      "src": "package/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "build" }
+      "config": { "distDir": "package/build" }
     }
   ],
-  "rewrites": [
-    {
-      "source": "/(.*)","destination": "/"
-    }
-  ],
-  "routes": [
+  "staticRoutes": [
     {
       "src": "/favicon.ico",
-      "status": 204
+      "dest": "/public/favicon.ico"
     }
   ]
 }
