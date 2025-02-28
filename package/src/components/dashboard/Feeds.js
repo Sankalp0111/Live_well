@@ -3,47 +3,33 @@ import { Card, CardBody, CardTitle, Button, Spinner } from "reactstrap";
 import { FaHeartbeat, FaTemperatureLow } from "react-icons/fa";
 import { GiHealthPotion } from "react-icons/gi";
 
-const rawData = [
-  [15.3, 98, 34],
-  [20.9, 59, 100],
-  [17, 77, 125],
-  [17.2, 84, 115],
-  [18.9, 58, 166],
-  [19.8, 92, 150],
-  [24.3, 100, 150],
-  [31.7, 93, 166],
-  [34.3, 100, 214],
-  [32.1, 99, 166],
-];
-
-const getRandomValue = (value, range) => {
-  return (value + (Math.random() * range - range / 2)).toFixed(1);
-};
-
 const Feeds = () => {
   const [healthData, setHealthData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showDownload, setShowDownload] = useState(false);
 
-  useEffect(() => {
-    const updateHealthData = () => {
-      const randomIndex = Math.floor(Math.random() * rawData.length);
-      const heartRate = getRandomValue(rawData[randomIndex][0], 5);
-      const bodyTemp = getRandomValue(rawData[randomIndex][1], 3);
-      const spo2 = getRandomValue(rawData[randomIndex][2], 10);
+  const fetchHealthData = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:5000/health-data");
+      const data = await response.json();
 
       setHealthData([
-        { name: "Heart Rate", value: `${heartRate} bpm` },
-        { name: "Body Temperature", value: `${bodyTemp}°C` },
-        { name: "SpO2", value: `${spo2}%` },
+        { name: "Heart Rate", value: `${data.heart_rate} bpm`, icon: <FaHeartbeat size={28} color="#ff4d4f" /> },
+        { name: "Body Temperature", value: `${data.temperature}°C`, icon: <FaTemperatureLow size={28} color="#1890ff" /> },
+        { name: "SpO2", value: `${data.spo2}%`, icon: <GiHealthPotion size={28} color="#52c41a" /> },
       ]);
 
       setLoading(false);
-    };
+    } catch (error) {
+      console.error("Error fetching health data:", error);
+      setLoading(false);
+    }
+  };
 
-    updateHealthData();
-    const interval = setInterval(updateHealthData, 300000);
+  useEffect(() => {
+    fetchHealthData();
+    const interval = setInterval(fetchHealthData, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -67,28 +53,47 @@ const Feeds = () => {
   };
 
   return (
-    <Card className="border-0 shadow-sm">
+    <Card className="border-0 shadow p-4 rounded" style={{ background: "#f0f8ff", borderColor: "#1890ff" }}>
       <CardBody>
-        <CardTitle tag="h5" className="text-center mb-3 text-primary">
+        <CardTitle tag="h4" className="text-center mb-4" style={{ color: "#1890ff", fontWeight: "bold" }}>
           Health Insights
         </CardTitle>
 
-        <div className="text-center mt-3">
-          <Button color="primary" onClick={generateInsights} disabled={isGenerating}>
-            {isGenerating ? <Spinner size="sm" /> : "Generate Insight"}
+        {loading ? (
+          <div className="text-center">
+            <Spinner color="primary" />
+            <p className="mt-2" style={{ color: "#595959" }}>Fetching latest health data...</p>
+          </div>
+        ) : (
+          <div>
+            {healthData.map((item, index) => (
+              <Card key={index} className="d-flex flex-row align-items-center shadow-sm mb-3 p-3 border-0" style={{ background: "#ffffff", borderRadius: "12px" }}>
+                <div className="me-3">{item.icon}</div>
+                <div>
+                  <h6 style={{ color: "#595959", fontWeight: "bold" }}>{item.name}</h6>
+                  <p style={{ fontSize: "16px", color: "#333", margin: 0 }}>{item.value}</p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        <div className="text-center mt-4">
+          <Button color="primary" onClick={generateInsights} disabled={isGenerating} style={{ background: "#1890ff", borderColor: "#1890ff" }}>
+            {isGenerating ? <Spinner size="sm" /> : "Generate Insights"}
           </Button>
         </div>
 
         {isGenerating && (
           <div className="text-center mt-3">
             <Spinner color="primary" />
-            <p>Generating insights...</p>
+            <p className="mt-2" style={{ color: "#595959" }}>Processing insights...</p>
           </div>
         )}
 
         {showDownload && (
-          <div className="text-center mt-3">
-            <Button color="success" onClick={downloadReport}>
+          <div className="text-center mt-4">
+            <Button color="success" onClick={downloadReport} style={{ background: "#52c41a", borderColor: "#52c41a" }}>
               Download Report
             </Button>
           </div>

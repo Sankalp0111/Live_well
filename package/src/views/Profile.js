@@ -23,9 +23,9 @@ const PatientForm = () => {
 
   const [selectedSection, setSelectedSection] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false); // Tracks whether data was submitted
+  const [submitted, setSubmitted] = useState(false);
 
-  const sections = ["patientInfo", "healthInfo", "emergencyContact"];
+  const sections = ["Patient Information", "Health Information", "Emergency Contact"];
 
   useEffect(() => {
     const savedData = localStorage.getItem("patientReport");
@@ -56,7 +56,7 @@ const PatientForm = () => {
 
     setLoading(true);
     try {
-      const response = await fetch("http://192.168.0.107:5000/submit", {
+      const response = await fetch("http://localhost:5000/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -67,7 +67,6 @@ const PatientForm = () => {
         throw new Error(data.error || "Failed to save data");
       }
 
-      // Save submitted data in localStorage to persist across logins
       localStorage.setItem("patientReport", JSON.stringify(formData));
       setSubmitted(true);
       alert("Patient data submitted successfully!");
@@ -80,11 +79,11 @@ const PatientForm = () => {
   };
 
   const handleEdit = () => {
-    setSubmitted(false); // Allows editing
+    setSubmitted(false);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("patientReport"); // Clear saved data on logout
+    localStorage.removeItem("patientReport");
     setSubmitted(false);
   };
 
@@ -93,7 +92,6 @@ const PatientForm = () => {
       <h2>Patient Profile</h2>
 
       {submitted ? (
-        // **Report Format**
         <div className="summary">
           <h3>Patient Summary</h3>
           {Object.entries(formData).map(([key, value]) => (
@@ -105,11 +103,11 @@ const PatientForm = () => {
           <button onClick={handleLogout}>Logout</button>
         </div>
       ) : (
-        // **Form with Input Fields**
         <form onSubmit={handleSubmit}>
+          <h3>{sections[selectedSection]}</h3>
+
           {selectedSection === 0 && (
             <div className="form-section">
-              <h3>Patient Info</h3>
               <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="First Name" required />
               <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Last Name" required />
               <input type="date" name="dob" value={formData.dob} onChange={handleChange} required />
@@ -125,7 +123,6 @@ const PatientForm = () => {
 
           {selectedSection === 1 && (
             <div className="form-section">
-              <h3>Health Info</h3>
               <input type="text" name="bloodType" value={formData.bloodType} onChange={handleChange} placeholder="Blood Type" />
               <input type="number" name="height" value={formData.height} onChange={handleChange} placeholder="Height (cm)" />
               <input type="number" name="weight" value={formData.weight} onChange={handleChange} placeholder="Weight (kg)" />
@@ -137,7 +134,6 @@ const PatientForm = () => {
 
           {selectedSection === 2 && (
             <div className="form-section">
-              <h3>Emergency Contact</h3>
               <input type="text" name="emergencyContactName" value={formData.emergencyContactName} onChange={handleChange} placeholder="Contact Name" required />
               <input type="text" name="emergencyRelationship" value={formData.emergencyRelationship} onChange={handleChange} placeholder="Relationship" />
               <input type="text" name="emergencyPhone" value={formData.emergencyPhone} onChange={handleChange} placeholder="Emergency Phone" required />

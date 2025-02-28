@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
 import { Navbar, Collapse, Nav, NavItem, Button } from "reactstrap";
-import { auth } from "../firebase"; // Import Firebase auth
+import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
 import { toast } from "react-toastify";
 
@@ -12,11 +12,9 @@ const Header = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Firebase authentication state listener
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -24,7 +22,7 @@ const Header = () => {
     try {
       await signOut(auth);
       toast.success("Logged out successfully!", { autoClose: 2000, position: "top-center" });
-      navigate("/signin"); // Redirect to sign-in page
+      navigate("/signin");
     } catch (error) {
       toast.error("Logout failed: " + error.message);
     }
@@ -35,10 +33,21 @@ const Header = () => {
   return (
     <Navbar color="primary" dark expand="md" className="fix-header">
       <div className="d-flex align-items-center">
-        <div className="text-white fw-bold fs-2">LiveWell</div>
+        <div
+          style={{
+            fontWeight: "bold",
+            fontSize: "2rem",
+            color: "white",
+            textShadow: "0 0 8px rgba(255, 255, 255, 0.5)",
+            animation: "fadeInScale 1.2s ease-out, pulseGlow 3s infinite ease-in-out",
+            transition: "transform 0.3s ease, text-shadow 0.3s ease",
+          }}
+          className="livewell-logo"
+        >
+          LiveWell
+        </div>
       </div>
 
-      {/* Hamburger menu button for small screens */}
       <div className="hstack gap-2">
         <Button
           color="primary"
@@ -51,7 +60,7 @@ const Header = () => {
       </div>
 
       <Collapse navbar isOpen={isOpen}>
-        <Nav className="ms-auto d-md-none" navbar> {/* Show menu only on small screens */}
+        <Nav className="ms-auto d-md-none" navbar>
           <NavItem>
             <Link to="/dashboard" className="nav-link">Dashboard</Link>
           </NavItem>
@@ -71,7 +80,6 @@ const Header = () => {
             <Link to="/profile" className="nav-link">Profile</Link>
           </NavItem>
 
-          {/* Logout Button for Mobile View */}
           {user && (
             <NavItem>
               <Button color="none" className="w-100 mt-2 text-white" onClick={handleLogout}>
@@ -84,7 +92,7 @@ const Header = () => {
 
       <div className="d-none d-md-block">
         {user ? (
-          <Button  color="none" className="text-white"  onClick={handleLogout}>
+          <Button color="none" className="text-white" onClick={handleLogout}>
             <FaSignOutAlt className="me-2" /> Logout
           </Button>
         ) : (
@@ -93,6 +101,35 @@ const Header = () => {
           </Link>
         )}
       </div>
+
+      <style>
+        {`
+          @keyframes fadeInScale {
+            0% {
+              opacity: 0;
+              transform: scale(0.8);
+            }
+            100% {
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
+
+          @keyframes pulseGlow {
+            0%, 100% {
+              text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+            }
+            50% {
+              text-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+            }
+          }
+
+          .livewell-logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 1);
+          }
+        `}
+      </style>
     </Navbar>
   );
 };
