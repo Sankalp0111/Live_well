@@ -4,7 +4,7 @@ import "./assets/scss/style.scss";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { HashRouter } from "react-router-dom";
-
+import Loader from "./layouts/loader/Loader";
 const rootElement = document.getElementById("root");
 
 if (rootElement) {
@@ -12,7 +12,7 @@ if (rootElement) {
 
   root.render(
     <React.StrictMode>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<Loader/>}>
         <HashRouter>
           <App />
         </HashRouter>

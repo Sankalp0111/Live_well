@@ -100,7 +100,7 @@ const PatientForm = () => {
             </p>
           ))}
           <button onClick={handleEdit}>Edit Information</button>
-          <button onClick={handleLogout}>Logout</button>
+        
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
