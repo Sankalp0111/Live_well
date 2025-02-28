@@ -6,11 +6,5 @@
       "use": "@vercel/static-build",
       "config": { "distDir": "package/build" }
     }
-  ],
-  "staticRoutes": [
-    {
-      "src": "/favicon.ico",
-      "dest": "/public/favicon.ico"
-    }
   ]
 }
